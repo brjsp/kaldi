@@ -473,7 +473,7 @@ SymbolTable *CreateILabelInfoSymbolTable(const vector<vector<I> > &info,
   return ans;
 }
 
-inline void ComposeContext(const vector<int32> &disambig_syms_in,
+inline void ComposeContext( vector<int32> &&disambig_syms,
                            int N, int P,
                            VectorFst<StdArc> *ifst,
                            VectorFst<StdArc> *ofst,
@@ -483,7 +483,6 @@ inline void ComposeContext(const vector<int32> &disambig_syms_in,
   assert(P >= 0);
   assert(P < N);
 
-  vector<int32> disambig_syms(disambig_syms_in);
   std::sort(disambig_syms.begin(), disambig_syms.end());
   vector<int32> all_syms;
   GetInputSymbols(*ifst, false/*no eps*/, &all_syms);
@@ -507,7 +506,14 @@ inline void ComposeContext(const vector<int32> &disambig_syms_in,
     AddSubsequentialLoop(subseq_sym, ifst);
   ContextFst<StdArc, int32> cfst(subseq_sym, phones, disambig_syms, N, P);
   ComposeContextFst(cfst, *ifst, ofst);
-  *ilabels_out = cfst.ILabelInfo();
+  *ilabels_out = std::move(cfst.ILabelInfo());
+}
+inline void ComposeContext(const vector<int32> &disambig_syms_in,
+                           int N, int P,
+                           VectorFst<StdArc> *ifst,
+                           VectorFst<StdArc> *ofst,
+                           vector<vector<int32> > *ilabels_out) {
+	vector<int32> disambig_syms(disambig_syms_in);
 }
 
 ///
